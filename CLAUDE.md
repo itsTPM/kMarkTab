@@ -89,7 +89,7 @@ non-obvious parts (DST handling, ARIA choices, browser quirks); this is the map.
   new tab, kept by that tab: cached since `pageOpenedAt`), `hour` or `day`; the periods are aligned
   to the local wall clock, not to the fetch time (a new image at :00 of every hour, or at local
   midnight); see the comments on `rotationPeriod()` and `scheduleNextRotation()`. Unsplash photos come
-  from our backend (`../kNewTab-backend`, URL in `WXT_BACKEND_URL`, `.env`) in decks of 30:
+  from our backend (`../kMarkTab-backend`, URL in `WXT_BACKEND_URL`, `.env`) in decks of 30:
   `/v1/curated` when `unsplashSource` is `curated` (or the `unsplashCollection` ID is empty), else `/v1/collections/:id` with an
   `X-Install-Id` (`storage.local:installId`, a random UUID). The unshown rest of the deck is kept in
   `storage.local:unsplashDeck` (with its collection; a deck of another one is ignored), each

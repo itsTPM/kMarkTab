@@ -30,7 +30,7 @@ pnpm dev:firefox:real  # Firefox
 
 ## Backend
 
-Unsplash photos come from [kMarkTab-backend](../kNewTab-backend), so the extension needs no Unsplash key. Its URL is `WXT_BACKEND_URL` in `.env`; to use another one (e.g. a local backend), put it in `.env.local`:
+Unsplash photos come from [kMarkTab-backend](https://github.com/itsTPM/kMarkTab/), so the extension needs no Unsplash key. Its URL is `WXT_BACKEND_URL` in `.env`; to use another one (e.g. a local backend), put it in `.env.local`:
 
 ```bash
 WXT_BACKEND_URL=http://localhost:3000
