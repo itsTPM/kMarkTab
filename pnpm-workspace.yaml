@@ -1,0 +1,4 @@
+allowBuilds:
+  esbuild: true
+  spawn-sync: false
+  simple-git-hooks: false

@@ -1,0 +1,1474 @@
+:root {
+  /* dark native UI: scrollbars, select popups, form controls */
+  color-scheme: dark;
+
+  --bg: #16181d;
+  --bg-page: var(--bg);
+  --bg-elev: #1d2026;
+  --bg-sel: rgb(45 64 100);
+  --border: #2a2e37;
+  --border-hover: color-mix(in srgb, var(--border), var(--text-dim) 40%);
+  --text: #e6e8ec;
+  --text-dim: #8b909a;
+  --accent: #5b8cff;
+  --warning: #e0a458;
+  --accent-hover: color-mix(in srgb, var(--accent), white 12%);
+  --focus-ring: 0 0 0 0.1875rem color-mix(in srgb, var(--accent), transparent 75%);
+  --radius: 0.75rem;
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xs: calc(var(--radius) - 6px);
+
+  /* the panel's look, from the settings: set by public/appearance-init.js, these are the
+     defaults until it has run (keep in sync with DEFAULT_SETTINGS) */
+  --panel-opacity: 85%;
+  --panel-backdrop: blur(24px);
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100dvh;
+  color: var(--text);
+}
+
+html {
+  font-family: -apple-system, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
+  line-height: 1.3;
+  background: var(--bg-page);
+}
+
+body {
+  margin: 0;
+  padding: 1rem;
+
+  /* Chrome extension pages have 75% font size by default */
+  font-size: 100%;
+
+  /* inherited by ::before; toggled by the bgDim setting */
+  --bg-overlay: none;
+
+  &.bg-dim {
+    --bg-overlay: linear-gradient(rgb(16 18 21 / 25%), rgb(16 18 21 / 50%));
+  }
+
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      var(--bg-overlay),
+      var(--bg-image, none) center / cover no-repeat;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  &.bg-loaded::before {
+    opacity: 1;
+  }
+}
+
+kbd {
+  font-family: inherit;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.input,
+.select,
+.button {
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font: inherit;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
+
+  &:hover:not(:where(:focus-visible)) {
+    border-color: var(--border-hover);
+  }
+}
+
+.input,
+.select {
+  padding: 0.5rem;
+  outline: none;
+
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+  }
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  white-space: nowrap;
+  cursor: pointer;
+
+  /* the icon's own side bearing already adds visual space */
+  &:has(.button-icon) {
+    padding-inline-start: 0.625rem;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--bg), var(--text) 6%);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+  }
+}
+
+/* Icons are SVG files painted through a mask, so they follow the text color. The mask
+   goes on ::before, not on .icon itself: masking applies after filters, and would clip
+   the drop-shadow that some icons get. */
+.icon {
+  display: block;
+
+  &::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: currentcolor;
+    mask: var(--icon) center / contain no-repeat;
+  }
+}
+
+.icon-warning {
+  --icon: url("./assets/warning.svg");
+}
+
+.icon-settings {
+  --icon: url("./assets/settings.svg");
+}
+
+.icon-reset {
+  --icon: url("./assets/reset.svg");
+}
+
+.icon-close {
+  --icon: url("./assets/close.svg");
+}
+
+.icon-check {
+  --icon: url("./assets/check.svg");
+}
+
+.icon-image {
+  --icon: url("./assets/image.svg");
+}
+
+.icon-palette {
+  --icon: url("./assets/palette.svg");
+}
+
+.icon-clock {
+  --icon: url("./assets/clock.svg");
+}
+
+.icon-bookmark {
+  --icon: url("./assets/bookmark.svg");
+}
+
+.icon-chevron {
+  --icon: url("./assets/chevron-down.svg");
+}
+
+.icon-unsplash {
+  --icon: url("./assets/unsplash.svg");
+}
+
+.icon-bing {
+  --icon: url("./assets/bing.svg");
+}
+
+.icon-link {
+  --icon: url("./assets/link.svg");
+}
+
+.icon-file {
+  --icon: url("./assets/file.svg");
+}
+
+.icon-info {
+  --icon: url("./assets/info.svg");
+}
+
+.icon-github {
+  --icon: url("./assets/github.svg");
+}
+
+.icon-star {
+  --icon: url("./assets/star.svg");
+}
+
+.icon-swap {
+  --icon: url("./assets/swap.svg");
+}
+
+.icon-download {
+  --icon: url("./assets/download.svg");
+}
+
+.icon-upload {
+  --icon: url("./assets/upload.svg");
+}
+
+.button-icon {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.button-primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+
+  &:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+}
+
+/* a borderless button for secondary actions */
+.button-quiet {
+  color: var(--text-dim);
+  background: none;
+  border-color: transparent;
+
+  &:hover {
+    color: var(--text);
+    background: none;
+    border-color: transparent;
+  }
+}
+
+.button-reset {
+  .button-labels {
+    display: grid;
+
+    /* the shorter label is centered within the width of the longer one */
+    justify-items: center;
+
+    & > * {
+      grid-area: 1 / 1;
+    }
+  }
+
+  /* visibility (not display) keeps the hidden label's width and drops it from the
+	   accessibility tree, so the button's name is always the visible label */
+  .button-label-confirm {
+    visibility: hidden;
+  }
+
+  &[data-confirming] {
+    color: var(--warning);
+
+    .button-label-default {
+      visibility: hidden;
+    }
+
+    .button-label-confirm {
+      visibility: visible;
+    }
+  }
+}
+
+.page {
+  max-width: 40rem;
+  height: 100%;
+  padding: 1.75rem;
+  background: color-mix(in srgb, var(--bg-elev) var(--panel-opacity), transparent);
+  backdrop-filter: var(--panel-backdrop);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: 0 1rem 2rem rgb(0 0 0 / 35%);
+
+  /* The system asks for less transparency or more contrast: opaque, whatever the settings
+     say. Forced colors replace the background but leave the backdrop blur. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+    background: var(--bg-elev);
+    backdrop-filter: none;
+  }
+}
+
+.clock {
+  margin-bottom: 1.125rem;
+  text-align: center;
+
+  .time {
+    font-size: 3.5rem;
+    font-weight: 300;
+    min-height: 1em;
+
+    .time-period {
+      margin-left: 0.15em;
+      font-size: 0.4em;
+      color: var(--text-dim);
+    }
+  }
+
+  .date {
+    margin-top: 0.25rem;
+    color: var(--text-dim);
+    min-height: 1.3em;
+  }
+}
+
+.search {
+  width: 100%;
+  padding: 0.875rem 1.125rem;
+  font-size: 1.125rem;
+  background: rgb(0 0 0 / 25%);
+  border-color: rgb(255 255 255 / 12%);
+  border-radius: var(--radius-md);
+
+  &::placeholder {
+    color: var(--text-dim);
+  }
+}
+
+.list {
+  margin-top: 0.875rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+
+  /* The scrollbar's place is kept while there is nothing to scroll, so filtering or resizing
+     doesn't widen the rows; it is taken from the panel's padding (--scrollbar-gutter, set by
+     bookmarks.ts), so the rows stay as wide as the search field */
+  scrollbar-gutter: stable;
+  margin-right: calc(-1 * min(var(--scrollbar-gutter, 0px), 1.75rem));
+
+  /* transparent track so the translucent panel shows through */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+
+  &.selected {
+    background: var(--bg-sel);
+  }
+
+  &:hover:not(.selected) {
+    background: var(--bg);
+  }
+
+  &.folder {
+    font-weight: 600;
+  }
+}
+
+body.navigating {
+  cursor: progress;
+
+  .page {
+    opacity: 0.6;
+
+    /* delay so that fast navigations don't flash the dimming */
+    transition: opacity 0.3s ease 0.15s;
+  }
+}
+
+.row.navigating::after {
+  content: "";
+  flex: 0 0 auto;
+  margin-left: auto;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 0.125rem solid var(--text-dim);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: nav-spin 0.7s linear infinite;
+}
+
+@keyframes nav-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.arrow {
+  flex: 0 0 auto;
+  width: 0.875rem;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.row.folder.expanded .arrow {
+  rotate: 90deg;
+}
+
+.favicon {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 2px;
+  object-fit: cover;
+}
+
+.favicon-fallback {
+  border: 1px solid var(--text-dim);
+  border-radius: 50%;
+  background-color: var(--bg);
+  opacity: 0.5;
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  mark {
+    background: none;
+    color: var(--accent);
+    font-weight: 600;
+  }
+}
+
+/* folder path on a search-result row */
+.crumb {
+  flex: 0 1 auto;
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.empty {
+  margin-top: 0.875rem;
+  padding: 0.375rem 0.625rem;
+  color: var(--text-dim);
+  text-align: center;
+
+  /* The live region stays in the layout at all times; display:none (or [hidden])
+   would drop it from the accessibility tree and its text would go unannounced. */
+  &:empty {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Decorative: a mask (not an <img>) so the icon follows the text color and
+   stays out of the accessibility tree. */
+  &:not(:empty)::before {
+    content: "";
+    display: block;
+    width: 6rem;
+    height: 6rem;
+    margin: 0 auto 0.75rem;
+    background: currentcolor;
+    mask: url("./assets/empty-box.svg") center / contain no-repeat;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .empty-title {
+    margin-bottom: 0.25rem;
+    color: var(--text);
+    font-weight: 600;
+  }
+}
+
+.list-notice {
+  margin-top: 0.75rem;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  text-align: center;
+
+  /* A live region stays in the layout (see .empty); it only collapses while empty */
+  &:empty {
+    margin: 0;
+  }
+}
+
+.hint {
+  margin-top: 1.125rem;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  line-height: 1.6;
+
+  kbd {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    padding: 0.0625rem 0.375rem;
+
+    &:not(&:last-of-type) {
+      margin-right: 0.125rem;
+    }
+  }
+}
+
+.bg-credit {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 1;
+  font-size: 0.75rem;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 50%);
+  opacity: 0.75;
+
+  a {
+    color: inherit;
+  }
+}
+
+/* sits just left of .settings-toggle, on its row */
+.bg-status {
+  position: fixed;
+  z-index: 2;
+  top: 0.5rem;
+  right: 3rem;
+  height: 2.25rem;
+  max-width: calc(100vw - 4rem);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: rgb(255 255 255 / 75%);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 75%);
+
+  .bg-status-spinner,
+  .bg-status-icon {
+    display: none;
+    flex-shrink: 0;
+  }
+
+  .bg-status-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &[data-state="loading"] .bg-status-spinner {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    border: 0.125rem solid rgb(255 255 255 / 75%);
+    border-top-color: transparent;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 4px rgb(0 0 0 / 75%));
+
+    /* delayed, so that an image coming from the browser cache doesn't flash the loader */
+    animation:
+      nav-spin 0.7s linear infinite,
+      bg-status-appear 0.2s ease 0.3s backwards;
+  }
+
+  &[data-state="error"] .bg-status-icon {
+    display: block;
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--warning);
+    filter: drop-shadow(0 0 4px rgb(0 0 0 / 75%));
+  }
+
+  /* While the settings are open, the loader moves to their left so it stays visible (on a
+     window narrower than the drawer it is covered, like the rest of the page). The error is
+     shown in the dialog instead, by #set-status: this live region is inert meanwhile, so
+     hiding its text loses no announcement. */
+  body:has(.settings[open]) & {
+    right: calc(min(26.25rem, 100vw) + 0.5rem);
+    max-width: calc(100vw - min(26.25rem, 100vw) - 1rem);
+
+    .bg-status-icon,
+    .bg-status-text {
+      display: none;
+    }
+  }
+}
+
+@keyframes bg-status-appear {
+  from {
+    opacity: 0;
+  }
+}
+
+.settings-toggle {
+  position: fixed;
+  z-index: 2;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: rgb(255 255 255 / 75%);
+  transition:
+    color 0.2s ease,
+    box-shadow 0.15s ease;
+
+  &:hover {
+    color: white;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}
+
+.settings-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  filter: drop-shadow(0 0 8px rgb(0 0 0 / 75%));
+}
+
+/* A drawer along the right edge of the window, the full window on a narrow one */
+
+/* A modal <dialog> in the top layer, so it covers .settings-toggle without a z-index.
+   The UA hides it while closed; display is set only on [open], since an author rule
+   would beat the UA's dialog:not([open]) whatever its specificity. */
+.settings {
+  inset: 0 0 0 auto;
+  width: min(26.25rem, 100vw);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--bg-elev);
+  border: none;
+  border-left: 1px solid var(--border);
+  box-shadow: -1rem 0 3rem rgb(0 0 0 / 40%);
+  opacity: 0;
+  transform: translateX(1rem);
+
+  /* overlay keeps the closing dialog in the top layer until the transition ends */
+  transition:
+    opacity 0.18s ease,
+    transform 0.2s ease,
+    display 0.2s allow-discrete,
+    overlay 0.2s allow-discrete;
+
+  &[open] {
+    display: flex;
+    opacity: 1;
+    transform: none;
+
+    @starting-style {
+      opacity: 0;
+      transform: translateX(1rem);
+    }
+  }
+
+  /* the page stays visible: the background changes are previewed live */
+  &::backdrop {
+    background: transparent;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  a {
+    color: var(--accent);
+  }
+
+  .input,
+  .select {
+    min-width: 0;
+    padding: 0.4375rem 0.625rem;
+  }
+
+  [data-mode][hidden],
+  [data-unsplash-source][hidden] {
+    display: none;
+  }
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  /* The close button takes the exact place of .settings-toggle (top and right 0.5rem, same
+     size), so a second click on the gear's spot closes the settings */
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.icon-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover {
+    color: var(--text);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  .button-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+
+  /* the scrollbar's place is kept while there is nothing to scroll, so opening a section that
+     overflows doesn't narrow the content; a thin one on a transparent track looks like padding,
+     and takes the right padding's place (--scrollbar-gutter, measured by settings-panel.ts);
+     the left padding grows to its width, so that both sides match */
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.375rem max(0px, 0.5rem - var(--scrollbar-gutter, 0px)) 0.375rem
+    max(0.5rem, var(--scrollbar-gutter, 0px));
+}
+
+.settings-section {
+  /* every part of opening and closing moves together: slow to start, slow to settle */
+  --section-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  border-radius: var(--radius-md);
+
+  /* lets block-size transition to and from auto (Chromium; elsewhere it opens at once) */
+  interpolate-size: allow-keywords;
+  transition: background-color var(--section-transition);
+
+  &[open] {
+    background: var(--bg);
+  }
+
+  /* The content slides open and fades in: its height goes from 0 to auto, and
+     content-visibility, which hides a closed section's content, flips only once the closing
+     transition is over */
+  &::details-content {
+    block-size: 0;
+    overflow: clip;
+    opacity: 0;
+    transition:
+      block-size var(--section-transition),
+      opacity var(--section-transition),
+      content-visibility var(--section-transition) allow-discrete;
+  }
+
+  &[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+
+  /* the icons line up with the title, not the middle of the two-line header */
+  summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    list-style: none;
+    cursor: pointer;
+
+    /* clicking a header twice (open, close) would otherwise select its text */
+    user-select: none;
+    transition:
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    /* only a closed section's header: an open section already stands out */
+    .settings-section:not([open]) &:hover {
+      background: color-mix(in srgb, var(--bg-elev), var(--text) 4%);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  .settings-section-icon {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+
+    /* centered on the title's line */
+    margin-top: calc((1lh - 1.125rem) / 2);
+  }
+
+  /* The summary line stays in an open section too: the header keeps its height, so the spot
+     clicked to open a section is still there to close it */
+  .settings-section-title {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+    min-width: 0;
+    font-weight: 600;
+  }
+
+  .settings-section-summary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--text-dim);
+  }
+
+  .settings-section-chevron {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    margin-top: calc((1lh - 1rem) / 2);
+    color: var(--text-dim);
+    transition: transform var(--section-transition);
+  }
+
+  &[open] .settings-section-chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.settings-section-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0.75rem 0.375rem;
+
+  & > [data-mode] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .input,
+  .select {
+    background: var(--bg-elev);
+  }
+}
+
+.settings-subheading {
+  margin: 0.875rem 0 0.125rem;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* One setting: its label (and hint) on the left, the control on the right */
+
+/* The label over a second line, where the hint and the "not applied" line share one cell
+   and cross-fade. A row without a hint opens that line only while pending, so its label
+   slides up instead of jumping. */
+.setting-text {
+  display: grid;
+
+  /* minmax(0, …): a bare 0fr row still keeps its item's padding (an `auto` minimum), which
+     made a collapsed row 2px taller and moved its label off center */
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  transition: grid-template-rows var(--pending-transition);
+
+  &:not(:has(.setting-hint)) {
+    grid-template-rows: auto minmax(0, 0fr);
+  }
+}
+
+.setting-hint,
+.setting-pending {
+  grid-area: 2 / 1;
+  min-height: 0;
+  padding-top: 0.125rem;
+  overflow: hidden;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  transition:
+    opacity var(--pending-transition),
+    visibility var(--pending-transition);
+}
+
+.setting-pending {
+  color: var(--warning);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.setting-control {
+  flex: none;
+  width: 12rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  .input,
+  .select {
+    flex: 1;
+    width: 0;
+  }
+
+  .select {
+    flex-grow: 1.8;
+  }
+
+  .input:only-child,
+  .select:only-child {
+    flex-grow: 1;
+  }
+
+  /* a swatch, not a field: narrow, at the right edge, as tall as a text field */
+  .input[type="color"] {
+    flex: none;
+    width: 3.5rem;
+    height: calc(1lh + 0.875rem + 2px);
+    margin-inline-start: auto;
+    padding: 0.125rem;
+  }
+}
+
+/* A slider with its default value marked under the track. The thumb's center travels from
+   half a thumb in from the left edge to half a thumb in from the right one; the mark and the
+   filled part of the track are placed the same way, by --default-at and --value-at (0 to 1,
+   set by settings-panel.ts). */
+.range-track {
+  --thumb-size: 0.875rem;
+  --track-height: 0.25rem;
+
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-width: 0;
+
+  /* before the slider and both positioned, so the thumb is painted over the mark */
+  &::before {
+    content: "";
+    position: absolute;
+    top: calc(50% + var(--track-height) / 2 + 0.1875rem);
+    left: calc(var(--thumb-size) / 2 + (100% - var(--thumb-size)) * var(--default-at, 0));
+    width: 2px;
+    height: 0.3125rem;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: var(--text-dim);
+    pointer-events: none;
+  }
+
+  &:has(.range:disabled)::before {
+    opacity: 0.5;
+  }
+}
+
+/* The vendor pseudo-elements stay in separate rules: a selector list with one a browser
+   doesn't know is dropped whole */
+.range {
+  --fill: calc(var(--thumb-size) / 2 + (100% - var(--thumb-size)) * var(--value-at, 0));
+
+  appearance: none;
+  position: relative;
+  width: 100%;
+  height: 1.25rem;
+  margin: 0;
+  background: none;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: var(--track-height);
+    border-radius: calc(infinity * 1px);
+    background: linear-gradient(
+      to right,
+      var(--accent) var(--fill),
+      var(--border-hover) var(--fill)
+    );
+  }
+
+  &::-moz-range-track {
+    height: var(--track-height);
+    border-radius: calc(infinity * 1px);
+    background: var(--border-hover);
+  }
+
+  &::-moz-range-progress {
+    height: var(--track-height);
+    border-radius: calc(infinity * 1px);
+    background: var(--accent);
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
+    border-radius: 50%;
+    background: #fff;
+    transition: box-shadow 0.15s ease;
+  }
+
+  &::-moz-range-thumb {
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    border: none;
+    border-radius: 50%;
+    background: #fff;
+    transition: box-shadow 0.15s ease;
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::-webkit-slider-thumb {
+      box-shadow: var(--focus-ring);
+    }
+
+    &::-moz-range-thumb {
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+/* wide enough for "100%" and "40 px", so the slider doesn't shift as the value changes */
+.range-value {
+  flex: none;
+  width: 2.75rem;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+/* Collapsed to no width while the field isn't pending, with a negative margin taking back the
+   control's gap: it grows in, and the field beside it narrows smoothly */
+.commit-button {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 0;
+  margin-inline-start: -0.375rem;
+  padding: 0;
+  align-self: stretch;
+  overflow: hidden;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    width var(--pending-transition),
+    margin-inline-start var(--pending-transition),
+    opacity var(--pending-transition),
+    visibility var(--pending-transition),
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover {
+    background: var(--accent-hover);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}
+
+.setting {
+  --pending-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  /* fits a label with a hint or the "not applied" line under it, so that showing either
+     doesn't make the row taller */
+  min-height: 3.375rem;
+  padding: 0.5rem 0;
+
+  & + & {
+    border-top: 1px solid var(--border);
+  }
+
+  &.switch {
+    cursor: pointer;
+  }
+
+  /* The check button and the "not applied" line appear while a commit field differs from
+     the stored value */
+  &[data-pending] {
+    .setting-text {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .setting-pending {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .setting-hint {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .commit-button {
+      width: 2.25rem;
+      margin-inline-start: 0;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+.source-picker {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+
+  legend {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.source-tiles {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.375rem;
+}
+
+.source-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.3125rem;
+  font-size: 0.78rem;
+  text-align: center;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: var(--border-hover);
+  }
+
+  /* the second ring is drawn inside, so the selected tile doesn't grow */
+  &:has(:checked) {
+    font-weight: 600;
+    background: color-mix(in srgb, var(--bg-elev), var(--accent) 10%);
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  &:has(:focus-visible) {
+    box-shadow:
+      inset 0 0 0 1px var(--accent),
+      var(--focus-ring);
+  }
+}
+
+.source-tile-preview {
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  color: var(--text-dim);
+  background: #262a33;
+  border-radius: var(--radius-xs);
+
+  &[data-tone="green"] {
+    color: #b9c6b4;
+    background: #3d4a3a;
+  }
+
+  &[data-tone="amber"] {
+    color: #d9c3a5;
+    background: #4a3c2c;
+  }
+
+  .icon {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+.file-picker {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+
+  /* .input's padding, less the inner button's height over a line: as tall as a text field.
+     Doubled class to beat `.settings .input`. */
+  &.input {
+    padding: 0.25rem;
+  }
+
+  /* the input itself is hidden, so its focus shows on the box */
+  &:has(:focus-visible) {
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+  }
+}
+
+.file-picker-button {
+  flex: none;
+  padding: 0.125rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+}
+
+.file-picker-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.switch-input {
+  appearance: none;
+  flex-shrink: 0;
+  position: relative;
+  width: 2.25rem;
+  height: 1.25rem;
+  margin: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: calc(infinity * 1px);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition:
+      transform 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  &:hover:not(:where(:focus-visible)) {
+    border-color: var(--border-hover);
+  }
+
+  &:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+
+    &::before {
+      background: #fff;
+      transform: translateX(1rem);
+    }
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+  }
+}
+
+.about {
+  gap: 0.875rem;
+  padding-block: 0.25rem 0.75rem;
+
+  .about-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .about-logo {
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .about-name,
+  .about-version {
+    margin: 0;
+  }
+
+  .about-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .about-version {
+    margin-top: 0.125rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  .about-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    /* buttons, not inline links: the dialog's accent link color doesn't apply */
+    .button {
+      color: var(--text);
+      text-decoration: none;
+    }
+  }
+}
+
+.transfer {
+  gap: 0.75rem;
+  padding-block: 0.25rem 0.75rem;
+
+  .transfer-note,
+  .transfer-status {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  .transfer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* next to the buttons, so that it takes no room of its own while empty */
+  .transfer-status {
+    flex: 1 1 12rem;
+  }
+}
+
+.settings-section-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}
+
+.settings-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  border-top: 1px solid var(--border);
+
+  /* takes the free space, pushing the reset button right; empty when there is no error */
+  .settings-status {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--warning);
+  }
+}
+
+/* Once the panel would fill the width anyway (max-width + body padding), drop the frame
+   and let it fill the window: the settings button and the credit, fixed to the window
+   corners, then sit inside it. */
+@media (width <= 42rem) {
+  body {
+    padding: 0;
+  }
+
+  .page {
+    max-width: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+
+    /* room for the credit under the hint */
+    body:has(.bg-credit:not([hidden])) & {
+      padding-bottom: 2.75rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* the universal selector has zero specificity — nothing overrides without !important */
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Tab</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="/appearance-init.js"></script>
+    <script type="module" src="./main.ts"></script>
+  </head>
+  <body>
+    <div class="page">
+      <div id="clock" class="clock">
+        <div id="time" class="time"></div>
+        <div id="date" class="date"></div>
+      </div>
+      <script src="/clock-init.js"></script>
+      <input
+        id="search"
+        class="input search"
+        type="text"
+        placeholder="Search bookmarks…"
+        aria-label="Search bookmarks"
+        autocomplete="off"
+        spellcheck="false"
+        role="combobox"
+        aria-haspopup="tree"
+        aria-autocomplete="list"
+        aria-controls="list"
+        aria-expanded="false"
+        autofocus
+      />
+      <!--
+        The placeholder sits outside the tree: role="tree" may only own tree items.
+        It is never hidden and never removed — a live region has to be in the
+        accessibility tree *before* its text changes, or the change is not announced
+        (verified in NVDA: toggling [hidden] around the text change announced nothing).
+        While empty it collapses to zero height (see .empty:empty). Rewriting it with
+        the same text on every keystroke is fine: NVDA announces it once.
+      -->
+      <div id="list-empty" class="empty" role="status" aria-live="polite"></div>
+      <!--
+        tabindex="-1" keeps the list out of the tab order. Chrome otherwise makes a
+        scroll container without focusable children a tab stop of its own, while this
+        is the popup of the search combobox: focus stays in #search and every row is
+        reachable from there.
+        The role stays "tree" in search mode too: changing the role of a live node is
+        unreliable in screen readers.
+      -->
+      <div id="list" class="list" role="tree" aria-label="Bookmarks" tabindex="-1"></div>
+      <!-- Why a bookmark did not open; a live region, so never hidden, only empty -->
+      <p id="list-notice" class="list-notice" role="status"></p>
+      <div class="hint">
+        <kbd>↑</kbd><kbd>↓</kbd> navigate &nbsp;·&nbsp; <kbd>Enter</kbd> open / toggle &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>Enter</kbd> new tab &nbsp;·&nbsp; <kbd>Space</kbd> toggle folder
+      </div>
+    </div>
+
+    <!--
+      Background loading state, to the left of the settings button: a spinner while the
+      image loads, an error message if it fails, nothing once it is shown. A live region,
+      so it is never [hidden] — it is just empty when idle.
+    -->
+    <div id="bg-status" class="bg-status" role="status" data-state="idle">
+      <span class="bg-status-spinner" aria-hidden="true"></span>
+      <span class="icon icon-warning bg-status-icon" aria-hidden="true"></span>
+
+      <span id="bg-status-text" class="bg-status-text"></span>
+    </div>
+
+    <button
+      id="settings-toggle"
+      class="settings-toggle"
+      type="button"
+      aria-label="Settings"
+      title="Settings"
+    >
+      <span class="icon icon-settings settings-icon" aria-hidden="true"></span>
+    </button>
+
+    <!--
+      A modal dialog: the page behind it is inert. Changes apply as they are made: switches,
+      selects, the source tiles and the file picker right away. Fields that cost a network
+      request (marked .setting-commit) are applied by their check button or Enter; Escape
+      reverts them.
+    -->
+    <dialog id="settings" class="settings" aria-labelledby="set-title">
+      <div class="settings-header">
+        <h2 id="set-title">Settings</h2>
+        <button
+          id="set-close"
+          class="icon-button"
+          type="button"
+          aria-label="Close settings"
+          title="Close"
+        >
+          <span class="icon icon-close button-icon" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <div class="settings-body">
+        <details class="settings-section" open>
+          <summary>
+            <span class="icon icon-image settings-section-icon" aria-hidden="true"></span>
+            <span class="settings-section-title">
+              Background
+              <span id="set-summary-background" class="settings-section-summary"></span>
+            </span>
+            <span class="icon icon-chevron settings-section-chevron" aria-hidden="true"></span>
+          </summary>
+
+          <div class="settings-section-body">
+            <fieldset class="source-picker">
+              <legend class="settings-subheading">Source</legend>
+              <div class="source-tiles">
+                <label class="source-tile">
+                  <input class="visually-hidden" type="radio" name="bgMode" value="solid" />
+                  <span id="set-solid-preview" class="source-tile-preview"></span>
+                  Color
+                </label>
+                <label class="source-tile">
+                  <input class="visually-hidden" type="radio" name="bgMode" value="file" />
+                  <span class="source-tile-preview">
+                    <span class="icon icon-file" aria-hidden="true"></span>
+                  </span>
+                  File
+                </label>
+                <label class="source-tile">
+                  <input class="visually-hidden" type="radio" name="bgMode" value="url" />
+                  <span class="source-tile-preview">
+                    <span class="icon icon-link" aria-hidden="true"></span>
+                  </span>
+                  URL
+                </label>
+                <label class="source-tile">
+                  <input class="visually-hidden" type="radio" name="bgMode" value="unsplash" />
+                  <span class="source-tile-preview" data-tone="green">
+                    <span class="icon icon-unsplash" aria-hidden="true"></span>
+                  </span>
+                  Unsplash
+                </label>
+                <label class="source-tile">
+                  <input class="visually-hidden" type="radio" name="bgMode" value="bing" />
+                  <span class="source-tile-preview" data-tone="amber">
+                    <span class="icon icon-bing" aria-hidden="true"></span>
+                  </span>
+                  Bing
+                </label>
+              </div>
+            </fieldset>
+
+            <div data-mode="solid">
+              <div class="setting">
+                <label for="set-solidColor">Color</label>
+                <div class="setting-control">
+                  <input id="set-solidColor" class="input" type="color" />
+                </div>
+              </div>
+            </div>
+
+            <div data-mode="file">
+              <!-- The native input can't show the stored file's name (a script can't set its
+                   value), so it is hidden and drawn as a button plus the name instead -->
+              <div class="setting">
+                <span id="set-imageFile-label">Image file</span>
+                <div class="setting-control">
+                  <label class="input file-picker">
+                    <input
+                      id="set-imageFile"
+                      class="visually-hidden"
+                      type="file"
+                      accept="image/*"
+                      aria-labelledby="set-imageFile-label"
+                      aria-describedby="set-imageFile-name"
+                    />
+                    <span class="file-picker-button" aria-hidden="true">Choose</span>
+                    <span id="set-imageFile-name" class="file-picker-name"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div data-mode="url">
+              <div class="setting setting-commit">
+                <div class="setting-text">
+                  <label for="set-imageUrl">Image URL</label>
+                  <span id="set-imageUrl-pending" class="setting-pending"
+                    >Not applied<span aria-hidden="true"> · </span
+                    ><span class="visually-hidden">. Press </span>Enter<span
+                      class="visually-hidden"
+                    >
+                      to apply, Escape to revert</span
+                    ></span
+                  >
+                </div>
+                <div class="setting-control">
+                  <!-- not type="url": the browser's own validation has no form to report to -->
+                  <input
+                    id="set-imageUrl"
+                    class="input"
+                    type="text"
+                    inputmode="url"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <button
+                    class="commit-button"
+                    type="button"
+                    aria-label="Apply image URL"
+                    title="Apply"
+                  >
+                    <span class="icon icon-check button-icon" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div data-mode="unsplash">
+              <h3 class="settings-subheading">Unsplash</h3>
+              <div class="setting">
+                <label for="set-unsplashSource">Collection</label>
+                <div class="setting-control">
+                  <select id="set-unsplashSource" class="select">
+                    <option value="curated">Curated</option>
+                    <option value="collection">Collection ID</option>
+                  </select>
+                </div>
+              </div>
+              <div class="setting setting-commit" data-unsplash-source="collection">
+                <div class="setting-text">
+                  <label for="set-unsplashCollection">Collection ID</label>
+                  <span id="set-unsplashCollection-hint" class="setting-hint"
+                    >The ID of a public collection</span
+                  >
+                  <span id="set-unsplashCollection-pending" class="setting-pending"
+                    >Not applied<span aria-hidden="true"> · </span
+                    ><span class="visually-hidden">. Press </span>Enter<span
+                      class="visually-hidden"
+                    >
+                      to apply, Escape to revert</span
+                    ></span
+                  >
+                </div>
+                <div class="setting-control">
+                  <input
+                    id="set-unsplashCollection"
+                    class="input"
+                    type="text"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-describedby="set-unsplashCollection-hint"
+                  />
+                  <button
+                    class="commit-button"
+                    type="button"
+                    aria-label="Apply collection ID"
+                    title="Apply"
+                  >
+                    <span class="icon icon-check button-icon" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+              <div class="setting">
+                <label for="set-rotate">Rotate</label>
+                <div class="setting-control">
+                  <select id="set-rotate" class="select">
+                    <option value="tab">Every tab</option>
+                    <option value="hour">Every hour</option>
+                    <option value="day">Every day</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div data-mode="bing">
+              <h3 class="settings-subheading">Bing</h3>
+              <div class="setting">
+                <div class="setting-text">
+                  <label for="set-bingMarket">Region</label>
+                  <span id="set-bingMarket-hint" class="setting-hint"
+                    >Changes at midnight there</span
+                  >
+                </div>
+                <div class="setting-control">
+                  <select id="set-bingMarket" class="select" aria-describedby="set-bingMarket-hint">
+                    <option value="en-US">United States</option>
+                    <option value="en-GB">United Kingdom</option>
+                    <option value="ja-JP">Japan</option>
+                    <option value="de-DE">Germany</option>
+                    <option value="fr-FR">France</option>
+                    <option value="es-ES">Spain</option>
+                    <option value="pt-BR">Brazil</option>
+                    <option value="en-IN">India</option>
+                    <option value="en-CA">Canada</option>
+                    <option value="en-AU">Australia</option>
+                    <option value="zh-CN">China</option>
+                    <option value="it-IT">Italy</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- data-mode lists every mode the block is shown in -->
+            <div data-mode="file url unsplash bing">
+              <h3 class="settings-subheading">Image</h3>
+              <label class="setting switch">
+                Dim background
+                <input id="set-bgDim" class="switch-input" type="checkbox" role="switch" />
+              </label>
+              <div class="setting" data-mode="unsplash bing">
+                <label for="set-imageQuality">Image quality</label>
+                <div class="setting-control">
+                  <select id="set-imageQuality" class="select">
+                    <option value="hd">HD (720p)</option>
+                    <option value="fhd">Full HD (1080p)</option>
+                    <option value="qhd">QHD (1440p)</option>
+                    <option value="uhd">UHD (2160p)</option>
+                    <option value="original" data-mode="unsplash">Original</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section-actions">
+              <button
+                class="button button-quiet button-reset"
+                type="button"
+                data-reset="background"
+              >
+                <span class="icon icon-reset button-icon" aria-hidden="true"></span>
+                <!-- both labels share one grid cell, so the button keeps its width when they swap -->
+                <span class="button-labels">
+                  <span class="button-label-default">Reset background</span>
+                  <span class="button-label-confirm">Confirm reset</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-section">
+          <summary>
+            <span class="icon icon-palette settings-section-icon" aria-hidden="true"></span>
+            <span class="settings-section-title">
+              Appearance
+              <span id="set-summary-appearance" class="settings-section-summary"></span>
+            </span>
+            <span class="icon icon-chevron settings-section-chevron" aria-hidden="true"></span>
+          </summary>
+
+          <div class="settings-section-body">
+            <!-- min and max come from core/settings.ts; the value next to a slider is
+                 aria-hidden, the slider's aria-valuetext says the same. The mark under a
+                 slider shows its default value. -->
+            <div class="setting">
+              <div class="setting-text">
+                <label for="set-panelOpacity">Panel opacity</label>
+                <span id="set-system-opaque" class="setting-hint" hidden
+                  >Opaque: your system asks for less transparency or more contrast</span
+                >
+              </div>
+              <div class="setting-control">
+                <span class="range-track">
+                  <input id="set-panelOpacity" class="range" type="range" />
+                </span>
+                <span id="set-panelOpacity-value" class="range-value" aria-hidden="true"></span>
+              </div>
+            </div>
+            <div class="setting">
+              <label for="set-panelBlur">Panel blur</label>
+              <div class="setting-control">
+                <span class="range-track">
+                  <input id="set-panelBlur" class="range" type="range" />
+                </span>
+                <span id="set-panelBlur-value" class="range-value" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-section">
+          <summary>
+            <span class="icon icon-clock settings-section-icon" aria-hidden="true"></span>
+            <span class="settings-section-title">
+              Clock
+              <span id="set-summary-clock" class="settings-section-summary"></span>
+            </span>
+            <span class="icon icon-chevron settings-section-chevron" aria-hidden="true"></span>
+          </summary>
+
+          <div class="settings-section-body">
+            <label class="setting switch">
+              Show time
+              <input id="set-showTime" class="switch-input" type="checkbox" role="switch" />
+            </label>
+            <div class="setting">
+              <label for="set-timeFormat">Time format</label>
+              <div class="setting-control">
+                <select id="set-timeFormat" class="select">
+                  <option value="24h">24-hour (14:30)</option>
+                  <option value="12h">12-hour (2:30 PM)</option>
+                </select>
+              </div>
+            </div>
+            <label class="setting switch">
+              Show date
+              <input id="set-showDate" class="switch-input" type="checkbox" role="switch" />
+            </label>
+          </div>
+        </details>
+
+        <details class="settings-section">
+          <summary>
+            <span class="icon icon-bookmark settings-section-icon" aria-hidden="true"></span>
+            <span class="settings-section-title">
+              Bookmarks
+              <span id="set-summary-bookmarks" class="settings-section-summary"></span>
+            </span>
+            <span class="icon icon-chevron settings-section-chevron" aria-hidden="true"></span>
+          </summary>
+
+          <div class="settings-section-body">
+            <div class="setting">
+              <label for="set-faviconProvider">Favicons</label>
+              <div class="setting-control">
+                <select id="set-faviconProvider" class="select">
+                  <option value="chrome">Chrome API</option>
+                  <option value="google">Google</option>
+                  <option value="duckduckgo">DuckDuckGo</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-section">
+          <summary>
+            <span class="icon icon-swap settings-section-icon" aria-hidden="true"></span>
+            <span class="settings-section-title">
+              Import and export
+              <span class="settings-section-summary">Settings as a JSON file</span>
+            </span>
+            <span class="icon icon-chevron settings-section-chevron" aria-hidden="true"></span>
+          </summary>
+
+          <div class="settings-section-body transfer">
+            <p class="transfer-note">
+              A background image file stays on this device and isn't exported.
+            </p>
+            <div class="transfer-actions">
+              <button id="set-export" class="button" type="button">
+                <span class="icon icon-download button-icon" aria-hidden="true"></span>
+                Export
+              </button>
+              <button id="set-import" class="button" type="button">
+                <span class="icon icon-upload button-icon" aria-hidden="true"></span>
+                Import
+              </button>
+              <!-- opened by the Import button -->
+              <input
+                id="set-import-file"
+                type="file"
+                accept="application/json,.json"
+                aria-label="Settings file"
+                hidden
+              />
+              <!-- A live region: emptied, never [hidden] -->
+              <p id="set-transfer-status" class="transfer-status" role="status"></p>
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-section">
+          <summary>
+            <span class="icon icon-info settings-section-icon" aria-hidden="true"></span>
+            <span class="settings-section-title">
+              About
+              <span id="set-summary-about" class="settings-section-summary"></span>
+            </span>
+            <span class="icon icon-chevron settings-section-chevron" aria-hidden="true"></span>
+          </summary>
+
+          <!-- The name and version are filled in from the manifest -->
+          <div class="settings-section-body about">
+            <div class="about-header">
+              <img class="about-logo" src="/icon/128.png" alt="" width="48" height="48" />
+              <div>
+                <p id="set-about-name" class="about-name"></p>
+                <p id="set-about-version" class="about-version"></p>
+              </div>
+            </div>
+            <div class="about-links">
+              <a
+                class="button"
+                href="https://github.com/itsTPM/kMarkTab"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span class="icon icon-github button-icon" aria-hidden="true"></span>
+                GitHub
+              </a>
+              <!-- html-validate-disable-next attribute-misuse -- the href is set from the extension id at runtime -->
+              <a id="set-about-review" class="button" target="_blank" rel="noreferrer">
+                <span class="icon icon-star button-icon" aria-hidden="true"></span>
+                Leave a review
+              </a>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="settings-footer">
+        <!-- The background errors, repeated here: #bg-status is inert while the dialog is open -->
+        <p id="set-status" class="settings-status" role="status"></p>
+        <button
+          id="set-reset"
+          class="button button-quiet button-reset"
+          type="button"
+          data-reset="all"
+        >
+          <span class="icon icon-reset button-icon" aria-hidden="true"></span>
+          <span class="button-labels">
+            <span class="button-label-default">Restore all defaults</span>
+            <span class="button-label-confirm">Confirm restore</span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Announces the reset confirmation step. A live region must stay in the
+           accessibility tree, so it is only visually hidden, never [hidden]. -->
+      <span id="set-reset-status" class="visually-hidden" role="status"></span>
+    </dialog>
+
+    <div id="bg-credit" class="bg-credit" hidden>
+      <span id="bg-credit-unsplash">
+        <!-- html-validate-disable-next attribute-misuse -- the author profile href is set from the background cache at runtime -->
+        Photo by <a id="bg-credit-author" target="_blank" rel="noreferrer"></a> on
+        <a
+          href="https://unsplash.com/?utm_source=kMarkTab&utm_medium=referral"
+          target="_blank"
+          rel="noreferrer"
+          >Unsplash</a
+        >
+      </span>
+      <!-- html-validate-disable-next attribute-misuse -- the href is set from the background cache at runtime -->
+      <a id="bg-credit-bing" target="_blank" rel="noreferrer"></a>
+    </div>
+  </body>
+</html>

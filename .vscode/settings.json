@@ -1,0 +1,11 @@
+{
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "[javascript][typescript]": {
+    "editor.codeActionsOnSave": { "source.fixAll.oxc": "explicit" }
+  },
+  "[css]": {
+    "editor.codeActionsOnSave": { "source.fixAll.stylelint": "explicit" }
+  },
+  "css.validate": false,
+  "stylelint.validate": ["css"]
+}

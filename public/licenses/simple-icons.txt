@@ -1,0 +1,10 @@
+The brand logos in entrypoints/newtab/assets/ are from Simple Icons, taken from
+Iconify (https://icon-sets.iconify.design/simple-icons/):
+
+  github.svg        github
+  unsplash.svg      unsplash
+
+Source: https://github.com/simple-icons/simple-icons
+The icon data is released under CC0 1.0 Universal
+(https://creativecommons.org/publicdomain/zero/1.0/). The logos themselves are
+trademarks of their owners: GitHub of GitHub, Inc., Unsplash of Unsplash Inc.

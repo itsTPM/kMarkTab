@@ -1,0 +1,9 @@
+entrypoints/newtab/assets/bing.svg is the Bing logo from CoreUI Icons (Brands), taken from
+Iconify (https://icon-sets.iconify.design/cib/):
+
+  bing.svg          bing
+
+Source: https://github.com/coreui/coreui-icons
+The brand icons are released under CC0 1.0 Universal
+(https://creativecommons.org/publicdomain/zero/1.0/). The Bing logo itself is a trademark
+of Microsoft Corporation.
