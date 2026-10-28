@@ -5,6 +5,8 @@ export default defineConfig({
   // Called after WXT has loaded the .env files into process.env
   manifest: ({ browser }) => ({
     name: "kMarkTab",
+    description:
+      "A keyboard-first new tab with searchable bookmarks, a clock, and custom backgrounds.",
     permissions: [
       "storage",
       "bookmarks",

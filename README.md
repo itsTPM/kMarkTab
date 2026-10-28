@@ -1,6 +1,6 @@
 # kMarkTab
 
-A keyboard-first new tab page extension for Chrome. Keep all your bookmarks at a glance with search, a clock, and a configurable background.
+A keyboard-first new tab page extension for Chrome with searchable bookmarks, a clock, and custom backgrounds.
 
 <!-- image here -->
 
