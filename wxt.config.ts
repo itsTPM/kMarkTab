@@ -1,9 +1,12 @@
 import { defineConfig } from "wxt";
 
+// The image of the day feed; the page asks for the same origin (BING_ACCESS in background.ts)
+const BING_HOSTS = "https://www.bing.com/*";
+
 export default defineConfig({
   imports: false,
   // Called after WXT has loaded the .env files into process.env
-  manifest: ({ browser }) => ({
+  manifest: ({ browser, manifestVersion }) => ({
     name: "kMarkTab",
     description:
       "A keyboard-first new tab with searchable bookmarks, a clock, and custom backgrounds.",
@@ -15,7 +18,13 @@ export default defineConfig({
       // https://bugzilla.mozilla.org/show_bug.cgi?id=1315616
       ...(browser === "firefox" ? [] : ["favicon"]),
     ],
-    host_permissions: [`${backendOrigin()}/*`, "https://www.bing.com/*"],
+    host_permissions: [`${backendOrigin()}/*`],
+    // Asked for when the Bing background is chosen, so that installing doesn't warn about it.
+    // WXT drops optional_host_permissions from MV2 instead of moving them: there hosts are
+    // optional_permissions.
+    ...(manifestVersion === 2
+      ? { optional_permissions: [BING_HOSTS] }
+      : { optional_host_permissions: [BING_HOSTS] }),
   }),
 });
 

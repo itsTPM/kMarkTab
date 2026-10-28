@@ -92,6 +92,11 @@ const seedCache = (at: number) =>
     background: { source: "unsplash", url: "https://images.test/cached", at },
   });
 
+// permissions.onAdded listeners, so that a test can grant access
+let accessListeners: (() => void)[] = [];
+const grantAccess = (granted: boolean) =>
+  vi.spyOn(fakeBrowser.permissions, "contains").mockResolvedValue(granted as never);
+
 const bgImage = () => document.documentElement.style.getPropertyValue("--bg-image");
 
 // microtask flush without touching the pending rotation timer
@@ -103,6 +108,13 @@ beforeEach(() => {
   vi.stubGlobal("Image", InstantImage);
   vi.stubGlobal("indexedDB", new IDBFactory());
   vi.stubEnv("WXT_BACKEND_URL", BACKEND);
+  // not implemented by fakeBrowser
+  grantAccess(true);
+  accessListeners = [];
+  vi.spyOn(fakeBrowser.permissions.onAdded, "addListener").mockImplementation((listener) => {
+    accessListeners.push(listener as () => void);
+  });
+  vi.spyOn(fakeBrowser.permissions.onRemoved, "addListener").mockImplementation(() => {});
   vi.stubGlobal(
     "fetch",
     vi.fn(async () => ({ ok: true, json: async () => deck() })),
@@ -488,6 +500,41 @@ describe("Bing image of the day", () => {
     await vi.advanceTimersByTimeAsync(15 * 60 * 1000 + 1000);
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(bgImage()).toContain("OHR.Cormorants");
+  });
+
+  it("asks for nothing without access to bing.com, and says where to allow it", async () => {
+    grantAccess(false);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { refreshBackground } = await setup(bingSettings);
+    refreshBackground();
+    await flush();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(document.querySelector("#bg-status-text")?.textContent).toBe(
+      "Bing needs access to bing.com: allow it under Background",
+    );
+  });
+
+  it("shows the image as soon as access is granted", async () => {
+    grantAccess(false);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { startBackground } = await setup(bingSettings);
+    startBackground();
+    await flush();
+    grantAccess(true);
+    accessListeners.forEach((listener) => listener());
+    await flush();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(bgImage()).toContain("OHR.Cormorants");
+  });
+
+  it("does not refresh another mode when access changes", async () => {
+    vi.setSystemTime(localTime(10, 5));
+    const { startBackground } = await setup();
+    startBackground();
+    await flush();
+    accessListeners.forEach((listener) => listener());
+    await flush();
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   // the cached image is still current by Unsplash's rotation period

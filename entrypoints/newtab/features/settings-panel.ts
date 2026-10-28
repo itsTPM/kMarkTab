@@ -16,7 +16,14 @@ import {
   unsplashCollectionId,
 } from "../core/settings";
 import { applyAppearance } from "./appearance";
-import { clearCache, onStatusChange, refreshBackground } from "./background";
+import {
+  clearCache,
+  hasBingAccess,
+  onBingAccessChange,
+  onStatusChange,
+  refreshBackground,
+  requestBingAccess,
+} from "./background";
 import { focusSearch, rerenderBookmarks } from "./bookmarks";
 import { applyClockSettings } from "./clock";
 
@@ -93,6 +100,8 @@ const systemOpaque = matchMedia(
 const imageFileNameEl = q<HTMLSpanElement>("#set-imageFile-name");
 const importFile = q<HTMLInputElement>("#set-import-file");
 const transferStatus = q<HTMLParagraphElement>("#set-transfer-status");
+const bingAccessRow = q<HTMLDivElement>("#set-bing-access");
+const bingAccessButton = q<HTMLButtonElement>("#set-bing-access-button");
 const summaries = {
   background: q<HTMLSpanElement>("#set-summary-background"),
   appearance: q<HTMLSpanElement>("#set-summary-appearance"),
@@ -125,6 +134,16 @@ function syncModeVisibility() {
 
 // The collection ID field is only there for the "Collection ID" source; hidden, it keeps
 // its value for switching back
+// The row is shown in Bing mode only while www.bing.com isn't allowed
+async function syncBingAccess() {
+  const granted = await hasBingAccess();
+  // the button goes away under the focus once access is granted with it
+  if (granted && document.activeElement === bingAccessButton) {
+    fields.bingMarket.focus();
+  }
+  bingAccessRow.hidden = granted;
+}
+
 function syncUnsplashSource() {
   const source = fields.unsplashSource.value;
   settingsPanel.querySelectorAll<HTMLElement>("[data-unsplash-source]").forEach((el) => {
@@ -398,10 +417,13 @@ async function importSettings() {
     }
     const next = await applyChange(values);
     populateFields(next);
+    // too late to ask for Bing access here: the browser asks only within a click
     transferStatus.textContent =
       next.bgMode === "file" && !next.imageFileName
         ? "Settings imported. The image file isn't part of them: choose it under Background"
-        : "Settings imported";
+        : next.bgMode === "bing" && !(await hasBingAccess())
+          ? "Settings imported. Bing needs access to bing.com: allow it under Background"
+          : "Settings imported";
   } catch {
     transferStatus.textContent = "Couldn't import the settings";
   } finally {
@@ -412,6 +434,7 @@ async function importSettings() {
 
 function openSettings() {
   populateFields(getSettings());
+  void syncBingAccess();
   settingsPanel.showModal();
   // measured once shown: the closed dialog isn't laid out
   setScrollbarGutter(settingsBody);
@@ -515,6 +538,11 @@ export function initSettingsPanel() {
   for (const input of modeInputs) {
     input.addEventListener("change", () => {
       syncModeVisibility();
+      if (input.value === "bing") {
+        // Asked for right away, within the click. The background shows the missing access
+        // meanwhile, and refreshes itself once it is granted.
+        void requestBingAccess();
+      }
       void applyChange({ bgMode: input.value });
     });
   }
@@ -569,6 +597,8 @@ export function initSettingsPanel() {
     }
   });
   fields.imageFile.addEventListener("change", commitImageFile);
+  bingAccessButton.addEventListener("click", () => void requestBingAccess());
+  onBingAccessChange(() => void syncBingAccess());
   q<HTMLButtonElement>("#set-export").addEventListener("click", exportSettings);
   q<HTMLButtonElement>("#set-import").addEventListener("click", () => importFile.click());
   importFile.addEventListener("change", importSettings);

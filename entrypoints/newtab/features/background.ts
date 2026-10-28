@@ -1,4 +1,5 @@
 import { storage } from "#imports";
+import { browser } from "wxt/browser";
 import { q } from "../core/dom";
 import { loadImageFile } from "../core/image-file";
 import { getSettings, IMAGE_WIDTHS, unsplashCollectionId } from "../core/settings";
@@ -12,6 +13,10 @@ const UNSPLASH_UTM = "utm_source=kMarkTab&utm_medium=referral";
 // Not a documented API, but the feed of bing.com's own home page; needs no key
 const BING_ORIGIN = "https://www.bing.com";
 const BING_ENDPOINT = `${BING_ORIGIN}/HPImageArchive.aspx`;
+// An optional permission (wxt.config.ts), asked for when Bing is chosen. Only the feed
+// needs it: the image itself is loaded like any other.
+const BING_ACCESS = { origins: [`${BING_ORIGIN}/*`] };
+const NO_BING_ACCESS = "Bing needs access to bing.com: allow it under Background";
 
 type ImageSource = "unsplash" | "bing";
 
@@ -397,6 +402,10 @@ function parseBingTime(value: string): number {
 // change, the day is 23 or 25 hours long: on a short day the old image stays an hour
 // longer, on a long day the request at +24h still gets the old image and is retried.
 async function fetchBingImage(): Promise<BackgroundCache> {
+  // Without the permission the request fails like a network error would
+  if (!(await hasBingAccess())) {
+    throw new Error(NO_BING_ACCESS);
+  }
   const { bingMarket } = getSettings();
   const endpoint = new URL(BING_ENDPOINT);
   endpoint.searchParams.set("format", "js");
@@ -587,6 +596,28 @@ export async function clearCache() {
   await backgroundCacheItem.removeValue();
 }
 
+export function hasBingAccess(): Promise<boolean> {
+  return browser.permissions.contains(BING_ACCESS);
+}
+
+// Call it from a user action, before any await: the browser shows its prompt only then
+export function requestBingAccess(): Promise<boolean> {
+  // rejected when called outside a user action
+  return browser.permissions.request(BING_ACCESS).catch(() => false);
+}
+
+// Access granted or revoked, from this tab, another one or the browser's extension page
+export function onBingAccessChange(listener: () => void) {
+  browser.permissions.onAdded.addListener(listener);
+  browser.permissions.onRemoved.addListener(listener);
+}
+
 export function startBackground() {
   refreshBackground();
+  // Granted while the error was shown (or the prompt was open): the image can come now
+  onBingAccessChange(() => {
+    if (getSettings().bgMode === "bing") {
+      refreshBackground();
+    }
+  });
 }

@@ -725,7 +725,8 @@ body.navigating {
   }
 
   [data-mode][hidden],
-  [data-unsplash-source][hidden] {
+  [data-unsplash-source][hidden],
+  #set-bing-access[hidden] {
     display: none;
   }
 }

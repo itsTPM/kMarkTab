@@ -7,6 +7,9 @@ vi.mock("../entrypoints/newtab/features/background", () => ({
   clearCache: vi.fn(),
   refreshBackground: vi.fn(),
   onStatusChange: vi.fn(),
+  hasBingAccess: vi.fn(async () => true),
+  requestBingAccess: vi.fn(async () => true),
+  onBingAccessChange: vi.fn(),
 }));
 vi.mock("../entrypoints/newtab/core/image-file", () => ({
   saveImageFile: vi.fn(),
@@ -727,6 +730,44 @@ describe("background mode fields", () => {
   });
 });
 
+describe("Bing access", () => {
+  const accessRow = () => el<HTMLElement>("#set-bing-access");
+
+  it("asks for it when Bing is chosen", async () => {
+    await setup();
+    const { requestBingAccess } = await mocks();
+    selectMode("unsplash");
+    expect(requestBingAccess).not.toHaveBeenCalled();
+    selectMode("bing");
+    expect(requestBingAccess).toHaveBeenCalledTimes(1);
+    await settled();
+    expect((await stored()).bgMode).toBe("bing");
+  });
+
+  it("offers to allow it while it isn't granted, until it is", async () => {
+    await setup();
+    const { hasBingAccess, onBingAccessChange, requestBingAccess } = await mocks();
+    const accessChanged = vi.mocked(onBingAccessChange).mock.calls[0]![0];
+    vi.mocked(hasBingAccess).mockResolvedValue(false);
+    accessChanged();
+    await settled();
+    expect(accessRow().hidden).toBe(false);
+    el<HTMLButtonElement>("#set-bing-access-button").click();
+    expect(requestBingAccess).toHaveBeenCalledTimes(1);
+
+    vi.mocked(hasBingAccess).mockResolvedValue(true);
+    accessChanged();
+    await settled();
+    expect(accessRow().hidden).toBe(true);
+  });
+
+  it("hides the offer when access is granted", async () => {
+    await setup();
+    await settled();
+    expect(accessRow().hidden).toBe(true);
+  });
+});
+
 describe("import and export", () => {
   const settingsFile = (settings: object) =>
     new File([JSON.stringify({ format: "kMarkTab-settings", version: 1, settings })], "s.json", {
@@ -775,6 +816,16 @@ describe("import and export", () => {
     expect(refreshBackground).toHaveBeenCalled();
     expect(applyClockSettings).toHaveBeenCalled();
     expect(transferStatus()).toBe("Settings imported");
+  });
+
+  it("says where to allow Bing when the imported settings use it without access", async () => {
+    await setup();
+    vi.mocked((await mocks()).hasBingAccess).mockResolvedValue(false);
+    importFile(settingsFile({ bgMode: "bing" }));
+    await settled();
+    expect(transferStatus()).toBe(
+      "Settings imported. Bing needs access to bing.com: allow it under Background",
+    );
   });
 
   it("keeps the image file of this device", async () => {
