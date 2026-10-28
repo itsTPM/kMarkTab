@@ -2,6 +2,7 @@
   "name": "kmarktab",
   "version": "1.0.0",
   "description": "A keyboard-first new tab page extension for Chrome with searchable bookmarks, a clock, and custom backgrounds.",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "postinstall": "wxt prepare && simple-git-hooks",
