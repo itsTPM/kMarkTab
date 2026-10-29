@@ -2,7 +2,7 @@
 
 A keyboard-first new tab page extension for Chrome with searchable bookmarks, a clock, and custom backgrounds.
 
-<!-- image here -->
+![kMarkTab new tab page: clock, bookmark list, and an Unsplash background](docs/screenshots/new-tab.webp)
 
 ## Features
 
