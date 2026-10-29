@@ -249,8 +249,7 @@ function syncSummaries(values: Settings) {
     : "Hidden";
   summaries.bookmarks.textContent = [
     `Favicons: ${optionText(fields.faviconProvider, values.faviconProvider)}`,
-    !values.searchCollapsed && "skips collapsed folders",
-    !values.searchUrl && "titles only",
+    !values.searchCollapsed && "skips collapsed",
     !values.searchFlat && "results as a tree",
   ]
     .filter(Boolean)

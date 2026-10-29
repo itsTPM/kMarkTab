@@ -285,9 +285,7 @@ describe("applying changes", () => {
     await settled();
     expect((await stored()).searchCollapsed).toBe(false);
     expect((await mocks()).rerenderBookmarks).toHaveBeenCalled();
-    expect(el("#set-summary-bookmarks").textContent).toBe(
-      "Favicons: Chrome API · skips collapsed folders",
-    );
+    expect(el("#set-summary-bookmarks").textContent).toBe("Favicons: Chrome API · skips collapsed");
   });
 
   it("applies the result layout switch and shows it in the summary", async () => {
@@ -304,7 +302,7 @@ describe("applying changes", () => {
     );
   });
 
-  it("applies the URL matching switch and shows it in the summary", async () => {
+  it("applies the URL matching switch, leaving it out of the summary", async () => {
     await setup();
     const toggle = el<HTMLInputElement>("#set-searchUrl");
     expect(toggle.checked).toBe(true);
@@ -313,7 +311,7 @@ describe("applying changes", () => {
     await settled();
     expect((await stored()).searchUrl).toBe(false);
     expect((await mocks()).rerenderBookmarks).toHaveBeenCalled();
-    expect(el("#set-summary-bookmarks").textContent).toBe("Favicons: Chrome API · titles only");
+    expect(el("#set-summary-bookmarks").textContent).toBe("Favicons: Chrome API");
   });
 
   it("applies the color when the picker closes, previewing it in its tile while picking", async () => {
