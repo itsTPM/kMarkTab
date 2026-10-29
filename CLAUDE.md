@@ -151,11 +151,13 @@ non-obvious parts (DST handling, ARIA choices, browser quirks); this is the map.
   contents hoisted to the top level, other non-empty roots become folders, separators skipped).
 
 Manifest permissions are declared in `wxt.config.ts`: `storage`, `bookmarks`, `search` always,
-`favicon` on non-Firefox, `host_permissions` for the backend's origin (from `WXT_BACKEND_URL`).
-`www.bing.com` is optional (`optional_host_permissions`; `optional_permissions` in MV2, where WXT
-drops the former): the panel asks for it within the click that picks the Bing tile (the browser
-prompts only from a user action) or by the "Allow access" button shown while it's missing;
-`fetchBingImage()` checks it first, and `permissions.onAdded` refreshes the background.
+`favicon` on non-Firefox. No `host_permissions`: the backend answers with CORS headers
+(`Access-Control-Allow-Origin: *`, `X-Install-Id` allowed, `Retry-After` exposed), so keep them
+there. `www.bing.com` sends none, so it is an optional permission (`optional_host_permissions`;
+`optional_permissions` in MV2, where WXT drops the former): the panel asks for it within the click
+that picks the Bing tile (the browser prompts only from a user action) or by the "Allow access"
+button shown while it's missing; `fetchBingImage()` checks it first, and `permissions.onAdded`
+refreshes the background.
 
 `WXT_BACKEND_URL` is set in the committed `.env` (a placeholder for now); override it in
 `.env.local` (not committed), e.g. `http://localhost:3000` for a local backend.
