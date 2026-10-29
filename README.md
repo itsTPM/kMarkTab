@@ -4,6 +4,15 @@ A keyboard-first new tab page extension for Chrome with searchable bookmarks, a 
 
 <!-- image here -->
 
+## Features
+
+- **Bookmark search**: Start typing to get fuzzy, relevance-ranked bookmarks by title and URL.
+- **Keyboard-first**: The search field is always focused. Use ↑/↓ and Page Up/Page Down to move, ←/→ or Space to collapse and expand folders, Enter to open a bookmark, and Ctrl+Enter (⌘+Enter on macOS) to open it in a new tab.
+- **Backgrounds**: Rotating Unsplash photos from a curated set or your own collection, changed with every new tab, hourly, or daily; the Bing image of the day; an image URL; a local file; or a solid color.
+- **Clock**: Time and date in 24- or 12-hour format.
+- **Appearance**: Adjustable panel opacity and background blur.
+- **Favicons**: From the browser's cache, Google, or DuckDuckGo.
+
 ## Privacy
 
 kMarkTab has no analytics, tracking, or accounts. Your bookmarks, settings, and background file stay in the browser.
