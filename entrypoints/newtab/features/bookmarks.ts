@@ -74,7 +74,7 @@ function collectCollapsedIds(nodes: TreeNode[], out: string[] = []): string[] {
   return out;
 }
 
-// Search: uFuzzy ranks a flat "title + URL" index; intraMode 1 tolerates one
+// Search: uFuzzy ranks a flat "title + URL" index (or a title-only one, see searchUrl); intraMode 1 tolerates one
 // typo per word, and out-of-order terms are allowed. uFuzzy's default patterns
 // only know A-Z (any other letter splits words), so they are widened to all
 // Unicode letters.
@@ -103,7 +103,9 @@ interface SearchEntry {
 }
 
 const searchEntries: SearchEntry[] = [];
+// Both are in searchEntries order; searchUrl picks the one to search
 const haystacks: string[] = [];
+const titleHaystacks: string[] = [];
 
 function buildSearchIndex(nodes: TreeNode[], folders: FolderNode[]) {
   for (const node of nodes) {
@@ -114,6 +116,7 @@ function buildSearchIndex(nodes: TreeNode[], folders: FolderNode[]) {
         folderPath: folders.map((folder) => folder.title).join(" / "),
       });
       haystacks.push(foldForSearch(`${node.title} ${node.url}`));
+      titleHaystacks.push(foldForSearch(node.title));
     } else {
       buildSearchIndex(node.children, [...folders, node]);
     }
@@ -202,7 +205,11 @@ interface SearchMatch {
 
 // The searchable entries matching the query, by descending relevance
 function findMatches(): SearchMatch[] {
-  const [idxs, info, order] = fuzzy.search(haystacks, foldForSearch(query), 1);
+  const [idxs, info, order] = fuzzy.search(
+    getSettings().searchUrl ? haystacks : titleHaystacks,
+    foldForSearch(query),
+    1,
+  );
   if (!idxs) {
     return [];
   }
@@ -272,7 +279,7 @@ function buildMatchedTreeRows(
   });
 }
 
-// uFuzzy's match ranges are relative to the 'title + " " + url' haystack;
+// uFuzzy's match ranges are relative to the 'title + " " + url' (or title-only) haystack;
 // highlight only the part that falls inside the visible title.
 function appendHighlighted(el: HTMLElement, text: string, ranges: number[]) {
   let pos = 0;

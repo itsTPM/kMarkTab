@@ -167,6 +167,8 @@ const SCHEMA = {
   searchCollapsed: { ...flag(true), affects: ["bookmarks"] },
   // Off: search results keep the tree, pruned to the matches, instead of a ranked list
   searchFlat: { ...flag(true), affects: ["bookmarks"] },
+  // Off: a search matches bookmark titles only
+  searchUrl: { ...flag(true), affects: ["bookmarks"] },
   unsplashSource: {
     ...oneOf(UNSPLASH_SOURCES, "curated"),
     affects: ["background", "backgroundCache"],

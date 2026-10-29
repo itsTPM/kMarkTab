@@ -116,7 +116,8 @@ non-obvious parts (DST handling, ARIA choices, browser quirks); this is the map.
     folded by `foldForSearch()` (accents, ё → е). With `searchCollapsed` off, bookmarks inside a
     collapsed folder (at any level) are left out. With `searchFlat` off, the results keep the
     tree instead (tree order, only the matches and their folders, all shown expanded; folders
-    can't be toggled there and keep their state);
+    can't be toggled there and keep their state). With `searchUrl` off, only titles are matched
+    (a second, title-only index);
   - Enter with no results searches the web via `browser.search.query`;
   - bookmarks with a non-web URL (`data:`, `file:`, `chrome:`, …) open through `browser.tabs`:
     Chrome silently drops a page's own navigation to them, leaving the spinner on forever. It drops

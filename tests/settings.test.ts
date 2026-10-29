@@ -22,6 +22,7 @@ const values = (overrides: Partial<SettingsInput> = {}): SettingsInput => ({
   faviconProvider: "google",
   searchCollapsed: true,
   searchFlat: true,
+  searchUrl: true,
   unsplashSource: "curated",
   unsplashCollection: "",
   rotate: "hour",

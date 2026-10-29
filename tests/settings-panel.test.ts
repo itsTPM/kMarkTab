@@ -304,6 +304,18 @@ describe("applying changes", () => {
     );
   });
 
+  it("applies the URL matching switch and shows it in the summary", async () => {
+    await setup();
+    const toggle = el<HTMLInputElement>("#set-searchUrl");
+    expect(toggle.checked).toBe(true);
+    toggle.checked = false;
+    toggle.dispatchEvent(new Event("change"));
+    await settled();
+    expect((await stored()).searchUrl).toBe(false);
+    expect((await mocks()).rerenderBookmarks).toHaveBeenCalled();
+    expect(el("#set-summary-bookmarks").textContent).toBe("Favicons: Chrome API · titles only");
+  });
+
   it("applies the color when the picker closes, previewing it in its tile while picking", async () => {
     await setup();
     const color = el<HTMLInputElement>("#set-solidColor");

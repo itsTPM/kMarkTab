@@ -259,6 +259,17 @@ describe("search", () => {
     expect(titles()).toEqual(["Beta"]);
   });
 
+  it("matches titles only when searchUrl is off", async () => {
+    await setup({ searchUrl: false });
+    type("beta.test");
+    expect(titles()).toEqual([]);
+    type("test");
+    expect(titles()).toEqual([]);
+    type("bet");
+    expect(titles()).toEqual(["Beta"]);
+    expect(rowByTitle("Beta")?.querySelector(".title mark")?.textContent).toBe("Bet");
+  });
+
   it("requires every word of a multi-word query to match", async () => {
     await setup();
     type("gamma test");
