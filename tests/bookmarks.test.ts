@@ -320,6 +320,62 @@ describe("search in collapsed folders", () => {
   });
 });
 
+describe("search results as a tree", () => {
+  const levels = () => rows().map((el) => el.getAttribute("aria-level"));
+
+  it("shows the matches under their folders in tree order", async () => {
+    await setup({ searchFlat: false });
+    type("a");
+    expect(titles()).toEqual(["Alpha", "Tools", "Beta", "Nested", "Gamma", "Broken", "Relay"]);
+    expect(levels()).toEqual(["1", "1", "2", "2", "3", "1", "1"]);
+    expect(rowByTitle("Gamma")?.querySelector(".crumb")).toBeNull();
+    expect(rowByTitle("Gamma")?.querySelector(".title mark")).not.toBeNull();
+  });
+
+  it("leaves out the folders without a match and counts only the shown siblings", async () => {
+    await setup({ searchFlat: false });
+    type("gam");
+    expect(titles()).toEqual(["Tools", "Nested", "Gamma"]);
+    expect(rowByTitle("Nested")?.getAttribute("aria-posinset")).toBe("1");
+    expect(rowByTitle("Nested")?.getAttribute("aria-setsize")).toBe("1");
+    expect(selectedTitle()).toBe("Gamma");
+  });
+
+  it("shows a collapsed folder expanded and keeps its state", async () => {
+    await setup({ searchFlat: false });
+    mouse(rowByTitle("Tools"), "click");
+    type("gam");
+    expect(titles()).toEqual(["Tools", "Nested", "Gamma"]);
+    expect(rowByTitle("Tools")?.getAttribute("aria-expanded")).toBe("true");
+    mouse(rowByTitle("Tools"), "click");
+    expect(titles()).toEqual(["Tools", "Nested", "Gamma"]);
+    type("");
+    expect(titles()).toEqual(["Alpha", "Tools", "Broken", "Relay", "YouTube"]);
+  });
+
+  it("does not toggle a folder on Enter or Space", async () => {
+    await setup({ searchFlat: false });
+    type("gam");
+    press("ArrowUp");
+    press("ArrowUp");
+    expect(selectedTitle()).toBe("Tools");
+    const space = new KeyboardEvent("keydown", { key: " ", cancelable: true });
+    document.querySelector("#search")?.dispatchEvent(space);
+    expect(space.defaultPrevented).toBe(false);
+    press("Enter");
+    expect(titles()).toEqual(["Tools", "Nested", "Gamma"]);
+    type("");
+    expect(titles()).toHaveLength(8);
+  });
+
+  it("skips collapsed folders when searchCollapsed is off", async () => {
+    await setup({ searchFlat: false, searchCollapsed: false });
+    mouse(rowByTitle("Nested"), "click");
+    type("test");
+    expect(titles()).toEqual(["Alpha", "Tools", "Beta", "Relay"]);
+  });
+});
+
 describe("search in other languages", () => {
   beforeEach(() => {
     extraBookmarks.push(

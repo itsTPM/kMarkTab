@@ -290,6 +290,20 @@ describe("applying changes", () => {
     );
   });
 
+  it("applies the result layout switch and shows it in the summary", async () => {
+    await setup();
+    const toggle = el<HTMLInputElement>("#set-searchFlat");
+    expect(toggle.checked).toBe(true);
+    toggle.checked = false;
+    toggle.dispatchEvent(new Event("change"));
+    await settled();
+    expect((await stored()).searchFlat).toBe(false);
+    expect((await mocks()).rerenderBookmarks).toHaveBeenCalled();
+    expect(el("#set-summary-bookmarks").textContent).toBe(
+      "Favicons: Chrome API · results as a tree",
+    );
+  });
+
   it("applies the color when the picker closes, previewing it in its tile while picking", async () => {
     await setup();
     const color = el<HTMLInputElement>("#set-solidColor");

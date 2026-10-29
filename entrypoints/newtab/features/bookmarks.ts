@@ -195,48 +195,81 @@ function buildTreeRows(nodes: TreeNode[], depth: number, rows: Row[]) {
   });
 }
 
-// Search results: a flat list ordered by descending relevance, without folders.
-function buildSearchRows(rows: Row[]) {
+interface SearchMatch {
+  entry: SearchEntry;
+  ranges?: number[];
+}
+
+// The searchable entries matching the query, by descending relevance
+function findMatches(): SearchMatch[] {
   const [idxs, info, order] = fuzzy.search(haystacks, foldForSearch(query), 1);
   if (!idxs) {
-    return;
+    return [];
   }
+  const matches: SearchMatch[] = [];
   if (info && order) {
     for (const infoIdx of order) {
       const haystackIdx = info.idx[infoIdx];
       const entry = haystackIdx === undefined ? undefined : searchEntries[haystackIdx];
-      if (!isSearchable(entry)) {
-        continue;
+      if (isSearchable(entry)) {
+        matches.push({ entry, ranges: info.ranges[infoIdx] });
       }
-      rows.push({
-        node: entry.node,
-        depth: 0,
-        posinset: rows.length + 1,
-        setsize: 0,
-        crumb: entry.folderPath,
-        ranges: info.ranges[infoIdx],
-      });
     }
   } else {
     // if the result set is large (larger than infoThresh) uFuzzy returns filtered indexes only
     for (const i of idxs) {
       const entry = searchEntries[i];
-      if (!isSearchable(entry)) {
-        continue;
+      if (isSearchable(entry)) {
+        matches.push({ entry });
       }
-      rows.push({
-        node: entry.node,
-        depth: 0,
-        posinset: rows.length + 1,
-        setsize: 0,
-        crumb: entry.folderPath,
-      });
     }
   }
-  // the sibling count is only known once the whole result list is built
-  for (const row of rows) {
-    row.setsize = rows.length;
+  return matches;
+}
+
+// Search results: with searchFlat a flat list ordered by descending relevance, without
+// folders; otherwise the tree, pruned to the matches and the folders they are in.
+function buildSearchRows(rows: Row[]) {
+  const matches = findMatches();
+  if (!getSettings().searchFlat) {
+    const ranges = new Map(matches.map((match) => [match.entry.node, match.ranges]));
+    const folders = new Set(matches.flatMap((match) => match.entry.folders));
+    buildMatchedTreeRows(bookmarkTree, 0, rows, ranges, folders);
+    return;
   }
+  for (const { entry, ranges } of matches) {
+    rows.push({
+      node: entry.node,
+      depth: 0,
+      posinset: rows.length + 1,
+      setsize: matches.length,
+      crumb: entry.folderPath,
+      ranges,
+    });
+  }
+}
+
+// The tree in its own order, with only the matched bookmarks and the folders that hold
+// one. Every folder shown is expanded, collapsed in the tree or not.
+function buildMatchedTreeRows(
+  nodes: TreeNode[],
+  depth: number,
+  rows: Row[],
+  ranges: Map<BookmarkNode, number[] | undefined>,
+  folders: Set<FolderNode>,
+) {
+  const shown = nodes.filter((node) =>
+    node.type === "bookmark" ? ranges.has(node) : folders.has(node),
+  );
+  shown.forEach((node, i) => {
+    const pos = { depth, posinset: i + 1, setsize: shown.length };
+    if (node.type === "bookmark") {
+      rows.push({ node, ...pos, ranges: ranges.get(node) });
+    } else {
+      rows.push({ node, ...pos, isFolder: true });
+      buildMatchedTreeRows(node.children, depth + 1, rows, ranges, folders);
+    }
+  });
 }
 
 // uFuzzy's match ranges are relative to the 'title + " " + url' haystack;
@@ -290,7 +323,8 @@ function createRowElement(row: Row, index: number) {
   }
 
   if (row.isFolder) {
-    const expanded = expandedFolders.has(row.node);
+    // a folder in the search results shows its matches whatever its state in the tree
+    const expanded = query !== "" || expandedFolders.has(row.node);
     el.setAttribute("aria-expanded", String(expanded));
     if (expanded) {
       el.classList.add("expanded");
@@ -479,9 +513,13 @@ function openBookmark(url: string, newTab: boolean) {
   }
 }
 
+// A folder in the search results stays as it is: it can't be collapsed there, and its
+// state in the tree is not changed unseen
 function activate(row: Row, newTab: boolean) {
   if (row.isFolder) {
-    toggleFolder(row.node);
+    if (!query) {
+      toggleFolder(row.node);
+    }
   } else {
     openBookmark(row.node.url, newTab);
   }
@@ -588,8 +626,9 @@ function onSearchKeydown(e: KeyboardEvent) {
       }
       break;
     case " ":
-      // Space toggles the folder instead of typing a space into the search field
-      if (sel?.isFolder) {
+      // Space toggles the folder instead of typing a space into the search field — in the
+      // tree only, a query may go on with a space
+      if (!query && sel?.isFolder) {
         e.preventDefault();
         toggleFolder(sel.node);
       }

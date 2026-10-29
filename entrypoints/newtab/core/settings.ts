@@ -165,6 +165,8 @@ const SCHEMA = {
   faviconProvider: { ...oneOf(FAVICON_PROVIDERS, "chrome"), affects: ["bookmarks"] },
   // Off: a search skips the bookmarks inside a collapsed folder
   searchCollapsed: { ...flag(true), affects: ["bookmarks"] },
+  // Off: search results keep the tree, pruned to the matches, instead of a ranked list
+  searchFlat: { ...flag(true), affects: ["bookmarks"] },
   unsplashSource: {
     ...oneOf(UNSPLASH_SOURCES, "curated"),
     affects: ["background", "backgroundCache"],
