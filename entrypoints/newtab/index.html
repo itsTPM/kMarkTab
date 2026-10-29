@@ -351,41 +351,38 @@
 
         <details class="settings-section">
           <summary>
-            <span class="icon icon-palette settings-section-icon" aria-hidden="true"></span>
+            <span class="icon icon-bookmark settings-section-icon" aria-hidden="true"></span>
             <span class="settings-section-title">
-              Appearance
-              <span id="set-summary-appearance" class="settings-section-summary"></span>
+              Bookmarks
+              <span id="set-summary-bookmarks" class="settings-section-summary"></span>
             </span>
             <span class="icon icon-chevron settings-section-chevron" aria-hidden="true"></span>
           </summary>
 
           <div class="settings-section-body">
-            <!-- min and max come from core/settings.ts; the value next to a slider is
-                 aria-hidden, the slider's aria-valuetext says the same. The mark under a
-                 slider shows its default value. -->
             <div class="setting">
-              <div class="setting-text">
-                <label for="set-panelOpacity">Panel opacity</label>
-                <span id="set-system-opaque" class="setting-hint" hidden
-                  >Opaque: your system asks for less transparency or more contrast</span
-                >
-              </div>
+              <label for="set-faviconProvider">Favicons</label>
               <div class="setting-control">
-                <span class="range-track">
-                  <input id="set-panelOpacity" class="range" type="range" />
-                </span>
-                <span id="set-panelOpacity-value" class="range-value" aria-hidden="true"></span>
+                <select id="set-faviconProvider" class="select">
+                  <option value="chrome">Chrome API</option>
+                  <option value="google">Google</option>
+                  <option value="duckduckgo">DuckDuckGo</option>
+                </select>
               </div>
             </div>
-            <div class="setting">
-              <label for="set-panelBlur">Panel blur</label>
-              <div class="setting-control">
-                <span class="range-track">
-                  <input id="set-panelBlur" class="range" type="range" />
-                </span>
-                <span id="set-panelBlur-value" class="range-value" aria-hidden="true"></span>
-              </div>
-            </div>
+            <h3 class="settings-subheading">Search</h3>
+            <label class="setting switch">
+              Search in collapsed folders
+              <input id="set-searchCollapsed" class="switch-input" type="checkbox" role="switch" />
+            </label>
+            <label class="setting switch">
+              Show results as a flat list
+              <input id="set-searchFlat" class="switch-input" type="checkbox" role="switch" />
+            </label>
+            <label class="setting switch">
+              Match bookmark URLs
+              <input id="set-searchUrl" class="switch-input" type="checkbox" role="switch" />
+            </label>
           </div>
         </details>
 
@@ -422,38 +419,41 @@
 
         <details class="settings-section">
           <summary>
-            <span class="icon icon-bookmark settings-section-icon" aria-hidden="true"></span>
+            <span class="icon icon-palette settings-section-icon" aria-hidden="true"></span>
             <span class="settings-section-title">
-              Bookmarks
-              <span id="set-summary-bookmarks" class="settings-section-summary"></span>
+              Appearance
+              <span id="set-summary-appearance" class="settings-section-summary"></span>
             </span>
             <span class="icon icon-chevron settings-section-chevron" aria-hidden="true"></span>
           </summary>
 
           <div class="settings-section-body">
+            <!-- min and max come from core/settings.ts; the value next to a slider is
+                 aria-hidden, the slider's aria-valuetext says the same. The mark under a
+                 slider shows its default value. -->
             <div class="setting">
-              <label for="set-faviconProvider">Favicons</label>
+              <div class="setting-text">
+                <label for="set-panelOpacity">Panel opacity</label>
+                <span id="set-system-opaque" class="setting-hint" hidden
+                  >Opaque: your system asks for less transparency or more contrast</span
+                >
+              </div>
               <div class="setting-control">
-                <select id="set-faviconProvider" class="select">
-                  <option value="chrome">Chrome API</option>
-                  <option value="google">Google</option>
-                  <option value="duckduckgo">DuckDuckGo</option>
-                </select>
+                <span class="range-track">
+                  <input id="set-panelOpacity" class="range" type="range" />
+                </span>
+                <span id="set-panelOpacity-value" class="range-value" aria-hidden="true"></span>
               </div>
             </div>
-            <h3 class="settings-subheading">Search</h3>
-            <label class="setting switch">
-              Search in collapsed folders
-              <input id="set-searchCollapsed" class="switch-input" type="checkbox" role="switch" />
-            </label>
-            <label class="setting switch">
-              Show results as a flat list
-              <input id="set-searchFlat" class="switch-input" type="checkbox" role="switch" />
-            </label>
-            <label class="setting switch">
-              Match bookmark URLs
-              <input id="set-searchUrl" class="switch-input" type="checkbox" role="switch" />
-            </label>
+            <div class="setting">
+              <label for="set-panelBlur">Panel blur</label>
+              <div class="setting-control">
+                <span class="range-track">
+                  <input id="set-panelBlur" class="range" type="range" />
+                </span>
+                <span id="set-panelBlur-value" class="range-value" aria-hidden="true"></span>
+              </div>
+            </div>
           </div>
         </details>
 
