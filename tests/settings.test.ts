@@ -20,6 +20,7 @@ const values = (overrides: Partial<SettingsInput> = {}): SettingsInput => ({
   panelOpacity: 85,
   panelBlur: 24,
   faviconProvider: "google",
+  searchCollapsed: true,
   unsplashSource: "curated",
   unsplashCollection: "",
   rotate: "hour",

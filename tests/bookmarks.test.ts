@@ -284,6 +284,42 @@ describe("search", () => {
   });
 });
 
+describe("search in collapsed folders", () => {
+  it("finds bookmarks in collapsed folders by default", async () => {
+    await setup();
+    mouse(rowByTitle("Tools"), "click");
+    type("gam");
+    expect(titles()).toEqual(["Gamma"]);
+  });
+
+  it("skips bookmarks in a collapsed folder at any level when turned off", async () => {
+    await setup({ searchCollapsed: false });
+    mouse(rowByTitle("Nested"), "click");
+    type("gam");
+    expect(titles()).toEqual([]);
+    type("beta");
+    expect(titles()).toEqual(["Beta"]);
+    type("");
+    mouse(rowByTitle("Nested"), "click");
+    mouse(rowByTitle("Tools"), "click");
+    type("gam");
+    expect(titles()).toEqual([]);
+    type("beta");
+    expect(titles()).toEqual([]);
+  });
+
+  it("applies a changed setting on rerender", async () => {
+    const bookmarks = await setup();
+    mouse(rowByTitle("Tools"), "click");
+    type("beta");
+    expect(titles()).toEqual(["Beta"]);
+    const { DEFAULT_SETTINGS, saveSettings } = await import("../entrypoints/newtab/core/settings");
+    await saveSettings({ ...DEFAULT_SETTINGS, searchCollapsed: false });
+    bookmarks.rerenderBookmarks();
+    expect(titles()).toEqual([]);
+  });
+});
+
 describe("search in other languages", () => {
   beforeEach(() => {
     extraBookmarks.push(

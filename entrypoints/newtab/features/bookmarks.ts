@@ -97,21 +97,36 @@ function foldForSearch(text: string): string {
 
 interface SearchEntry {
   node: BookmarkNode;
+  // the folders it is in, outermost first
+  folders: FolderNode[];
   folderPath: string;
 }
 
 const searchEntries: SearchEntry[] = [];
 const haystacks: string[] = [];
 
-function buildSearchIndex(nodes: TreeNode[], path: string[]) {
+function buildSearchIndex(nodes: TreeNode[], folders: FolderNode[]) {
   for (const node of nodes) {
     if (node.type === "bookmark") {
-      searchEntries.push({ node, folderPath: path.join(" / ") });
+      searchEntries.push({
+        node,
+        folders,
+        folderPath: folders.map((folder) => folder.title).join(" / "),
+      });
       haystacks.push(foldForSearch(`${node.title} ${node.url}`));
     } else {
-      buildSearchIndex(node.children, [...path, node.title]);
+      buildSearchIndex(node.children, [...folders, node]);
     }
   }
+}
+
+// Whether the entry may be a result: with searchCollapsed off, one inside a collapsed
+// folder (at any level) is not
+function isSearchable(entry: SearchEntry | undefined): entry is SearchEntry {
+  return (
+    entry !== undefined &&
+    (getSettings().searchCollapsed || entry.folders.every((folder) => expandedFolders.has(folder)))
+  );
 }
 
 // Hit faviconV2 directly instead of www.google.com/s2/favicons: the redirect from
@@ -190,7 +205,7 @@ function buildSearchRows(rows: Row[]) {
     for (const infoIdx of order) {
       const haystackIdx = info.idx[infoIdx];
       const entry = haystackIdx === undefined ? undefined : searchEntries[haystackIdx];
-      if (!entry) {
+      if (!isSearchable(entry)) {
         continue;
       }
       rows.push({
@@ -206,7 +221,7 @@ function buildSearchRows(rows: Row[]) {
     // if the result set is large (larger than infoThresh) uFuzzy returns filtered indexes only
     for (const i of idxs) {
       const entry = searchEntries[i];
-      if (!entry) {
+      if (!isSearchable(entry)) {
         continue;
       }
       rows.push({

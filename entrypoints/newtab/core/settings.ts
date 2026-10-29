@@ -163,6 +163,8 @@ const SCHEMA = {
   panelOpacity: { ...intIn(PANEL_OPACITY_RANGE, 85), affects: ["appearance"] },
   panelBlur: { ...intIn(PANEL_BLUR_RANGE, 24), affects: ["appearance"] },
   faviconProvider: { ...oneOf(FAVICON_PROVIDERS, "chrome"), affects: ["bookmarks"] },
+  // Off: a search skips the bookmarks inside a collapsed folder
+  searchCollapsed: { ...flag(true), affects: ["bookmarks"] },
   unsplashSource: {
     ...oneOf(UNSPLASH_SOURCES, "curated"),
     affects: ["background", "backgroundCache"],

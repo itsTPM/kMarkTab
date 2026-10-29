@@ -247,7 +247,12 @@ function syncSummaries(values: Settings) {
   summaries.clock.textContent = clock
     ? `Shows ${clock}${values.showTime ? ` · ${values.timeFormat}` : ""}`
     : "Hidden";
-  summaries.bookmarks.textContent = `Favicons: ${optionText(fields.faviconProvider, values.faviconProvider)}`;
+  summaries.bookmarks.textContent = [
+    `Favicons: ${optionText(fields.faviconProvider, values.faviconProvider)}`,
+    !values.searchCollapsed && "skips collapsed folders",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 // The About section: name and version from the manifest. The store reviews are addressed by

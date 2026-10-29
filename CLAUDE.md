@@ -113,7 +113,8 @@ non-obvious parts (DST handling, ARIA choices, browser quirks); this is the map.
   - non-empty query → relevance-ranked flat results from
     [uFuzzy](https://github.com/leeoniya/uFuzzy) over "title + URL", with match highlighting and
     the folder path as a crumb. Word patterns are widened to all Unicode letters, and text is
-    folded by `foldForSearch()` (accents, ё → е);
+    folded by `foldForSearch()` (accents, ё → е). With `searchCollapsed` off, bookmarks inside a
+    collapsed folder (at any level) are left out;
   - Enter with no results searches the web via `browser.search.query`;
   - bookmarks with a non-web URL (`data:`, `file:`, `chrome:`, …) open through `browser.tabs`:
     Chrome silently drops a page's own navigation to them, leaving the spinner on forever. It drops

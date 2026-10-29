@@ -275,6 +275,21 @@ describe("applying changes", () => {
     expect((await mocks()).rerenderBookmarks).toHaveBeenCalled();
   });
 
+  it("applies the collapsed-folder search switch and shows it in the summary", async () => {
+    await setup();
+    expect(el("#set-summary-bookmarks").textContent).toBe("Favicons: Chrome API");
+    const toggle = el<HTMLInputElement>("#set-searchCollapsed");
+    expect(toggle.checked).toBe(true);
+    toggle.checked = false;
+    toggle.dispatchEvent(new Event("change"));
+    await settled();
+    expect((await stored()).searchCollapsed).toBe(false);
+    expect((await mocks()).rerenderBookmarks).toHaveBeenCalled();
+    expect(el("#set-summary-bookmarks").textContent).toBe(
+      "Favicons: Chrome API · skips collapsed folders",
+    );
+  });
+
   it("applies the color when the picker closes, previewing it in its tile while picking", async () => {
     await setup();
     const color = el<HTMLInputElement>("#set-solidColor");
