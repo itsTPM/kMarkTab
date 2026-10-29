@@ -152,7 +152,6 @@ function intIn(range: { min: number; max: number }, fallback: number): Value<num
   };
 }
 
-// Every setting: its type, default, normalization and what it affects
 const SCHEMA = {
   bgMode: { ...oneOf(BG_MODES, "unsplash"), affects: ["background"] },
   solidColor: { ...color("#16181d"), affects: ["background"] },

@@ -74,10 +74,10 @@ function collectCollapsedIds(nodes: TreeNode[], out: string[] = []): string[] {
   return out;
 }
 
-// Search: uFuzzy ranks a flat "title + URL" index (or a title-only one, see searchUrl); intraMode 1 tolerates one
-// typo per word, and out-of-order terms are allowed. uFuzzy's default patterns
-// only know A-Z (any other letter splits words), so they are widened to all
-// Unicode letters.
+// Search: uFuzzy ranks a flat "title + URL" index (or a title-only one, see searchUrl);
+// intraMode 1 tolerates one typo per word, and out-of-order terms are allowed. uFuzzy's
+// default patterns only know A-Z (any other letter splits words), so they are widened to
+// all Unicode letters.
 const fuzzy = new uFuzzy({
   intraMode: 1,
   unicode: true,
@@ -183,7 +183,6 @@ function createFaviconElement(src: string): HTMLElement {
   return img;
 }
 
-// The whole tree (empty query): folders group the bookmarks in tree order.
 function buildTreeRows(nodes: TreeNode[], depth: number, rows: Row[]) {
   nodes.forEach((node, i) => {
     const pos = { depth, posinset: i + 1, setsize: nodes.length };

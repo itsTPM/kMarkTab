@@ -24,7 +24,5 @@ export function applyClockSettings() {
 }
 
 export function startClock() {
-  // clock-init.js has already applied the localStorage mirror; this catches the
-  // case where the mirror is missing or stale, and starts the tick
   applyClockSettings();
 }

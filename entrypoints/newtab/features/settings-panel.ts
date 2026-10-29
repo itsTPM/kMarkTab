@@ -132,8 +132,6 @@ function syncModeVisibility() {
   syncUnsplashSource();
 }
 
-// The collection ID field is only there for the "Collection ID" source; hidden, it keeps
-// its value for switching back
 // The row is shown in Bing mode only while www.bing.com isn't allowed
 async function syncBingAccess() {
   const granted = await hasBingAccess();
@@ -144,6 +142,8 @@ async function syncBingAccess() {
   bingAccessRow.hidden = granted;
 }
 
+// The collection ID field is only there for the "Collection ID" source; hidden, it keeps
+// its value for switching back
 function syncUnsplashSource() {
   const source = fields.unsplashSource.value;
   settingsPanel.querySelectorAll<HTMLElement>("[data-unsplash-source]").forEach((el) => {
@@ -159,7 +159,6 @@ function syncImageQuality() {
   fields.imageQuality.value = original ? "uhd" : imageQuality;
 }
 
-// Where a value sits on a slider, from 0 to 1
 function rangeFraction(value: number, range: { min: number; max: number }): number {
   return (value - range.min) / (range.max - range.min);
 }
@@ -184,8 +183,8 @@ function snapToDefault(key: keyof typeof RANGES) {
   }
 }
 
-// The sliders' values as shown and announced, and the filled part of their tracks. Blur does nothing behind an opaque panel, so
-// its slider is disabled then.
+// The sliders' values as shown and announced, and the filled part of their tracks. Blur
+// does nothing behind an opaque panel, so its slider is disabled then.
 function syncRanges(panelOpacity: number, panelBlur: number) {
   const text = { panelOpacity: `${panelOpacity}%`, panelBlur: `${panelBlur} px` };
   const values = { panelOpacity, panelBlur };

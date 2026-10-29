@@ -544,7 +544,7 @@ async function rotateBackground(gen: number, source: ImageSource) {
     if (err instanceof DeckError && Date.now() + err.retryAfterMs < nextRotationAt()) {
       scheduleRefresh(Date.now() + err.retryAfterMs);
     }
-    // fetch() rejects with a bare TypeError ("Failed to fetch") on network errors
+    // A network error of Bing's fetch(): fetchDeck() turns those of Unsplash into DeckErrors
     if (err instanceof TypeError) {
       setStatus({ state: "error", message: "Couldn't reach Bing" });
     } else {

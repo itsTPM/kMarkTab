@@ -1,7 +1,7 @@
 // A classic synchronous script included right after the clock markup: it fills
-// the clock in during parsing, before the first paint. ES modules run later and
-// left a frame with an empty gap. The ticking lives in features/clock.ts and
-// reuses window.renderClock and window.applyClockSettings.
+// the clock in during parsing, before the first paint; a module script would run
+// after it, leaving a frame with an empty gap. The ticking lives in
+// features/clock.ts and reuses window.renderClock and window.applyClockSettings.
 let hour12 = false;
 
 window.renderClock = () => {
